@@ -1,0 +1,30 @@
+{
+  "name": "multi-vendor-management-system",
+  "version": "1.0.0",
+  "description": "Full-Stack Multi-Vendor Management System (DBMS Project) with Node.js, Express, MySQL, JWT, and RBAC",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "node tests/api_test.js",
+    "db:init": "node database/init_db.js"
+  },
+  "keywords": [
+    "multi-vendor",
+    "dbms",
+    "mysql",
+    "express",
+    "jwt",
+    "rbac"
+  ],
+  "author": "Antigravity Pair Programmer",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.12.0"
+  }
+}
