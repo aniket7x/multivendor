@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketHub - Multi-Vendor Management System (DBMS Project)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        'primary-dark': '#4338ca',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- ====================================================================
+         1. DEMO ROLE-SWITCHER TOP BAR (Instant 1-Click Evaluation)
+         ==================================================================== -->
+    <header class="bg-slate-900 text-white text-xs py-2 px-4 border-b border-slate-800 z-40 sticky top-0">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+                    DBMS Demo Quick-Login
+                </span>
+                <span class="text-slate-400 hidden sm:inline">Switch roles instantly to test RBAC & features:</span>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button class="btn-demo-login px-2.5 py-1 rounded-md bg-purple-600/80 hover:bg-purple-600 text-white font-semibold transition-all text-[11px]" data-role="admin">
+                    👑 Admin
+                </button>
+                <button class="btn-demo-login px-2.5 py-1 rounded-md bg-amber-600/80 hover:bg-amber-600 text-white font-semibold transition-all text-[11px]" data-role="vendor" data-vendor-index="0">
+                    🏬 Vendor (TechZone)
+                </button>
+                <button class="btn-demo-login px-2.5 py-1 rounded-md bg-blue-600/80 hover:bg-blue-600 text-white font-semibold transition-all text-[11px]" data-role="vendor" data-vendor-index="1">
+                    👗 Vendor (Urban Chic)
+                </button>
+                <button class="btn-demo-login px-2.5 py-1 rounded-md bg-orange-600/80 hover:bg-orange-600 text-white font-semibold transition-all text-[11px]" data-role="vendor" data-vendor-index="3">
+                    ⏳ Vendor (Pending Review)
+                </button>
+                <button class="btn-demo-login px-2.5 py-1 rounded-md bg-emerald-600/80 hover:bg-emerald-600 text-white font-semibold transition-all text-[11px]" data-role="customer">
+                    🛍️ Customer (Alice)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================================================================
+         2. MAIN NAVIGATION HEADER
+         ==================================================================== -->
+    <nav class="glass-nav border-b border-slate-200 sticky top-[37px] z-30 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Brand & Nav Links -->
+                <div class="flex items-center space-x-8">
+                    <a href="#catalog" id="nav-catalog" class="flex items-center space-x-2.5 group">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                            <span class="text-xl font-black">M</span>
+                        </div>
+                        <div>
+                            <span class="text-lg font-extrabold tracking-tight text-slate-900 block leading-tight">Market<span class="text-indigo-600">Hub</span></span>
+                            <span class="text-[10px] font-semibold text-slate-400 block tracking-wider uppercase">Multi-Vendor DBMS</span>
+                        </div>
+                    </a>
+
+                    <!-- Status Indicator Badge -->
+                    <div id="db-status-badge" class="hidden md:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span>Checking Database...</span>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden lg:flex items-center space-x-1">
+                        <a href="#catalog" id="nav-catalog-link" class="nav-link px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                            Marketplace
+                        </a>
+                        <a href="#orders" id="nav-my-orders" class="nav-link hidden px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                            My Orders
+                        </a>
+                        <a href="#vendor" id="nav-vendor-portal" class="nav-link hidden px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                            Vendor Portal
+                        </a>
+                        <a href="#admin" id="nav-admin-portal" class="nav-link hidden px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
+                            Admin Portal
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Nav Actions -->
+                <div class="flex items-center space-x-3">
+                    <!-- Notifications Bell -->
+                    <button id="btn-open-notifications" class="relative p-2.5 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-colors" title="Notifications">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span id="notifications-badge" class="hidden absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white">
+                            0
+                        </span>
+                    </button>
+
+                    <!-- Cart Button -->
+                    <button id="btn-open-cart" class="relative flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 transition-all" title="View Cart">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span class="text-xs font-bold hidden sm:inline">Cart</span>
+                        <span id="cart-badge" class="hidden w-5 h-5 bg-indigo-600 text-white text-xs font-extrabold rounded-full flex items-center justify-center">
+                            0
+                        </span>
+                    </button>
+
+                    <!-- Unauthenticated Guest Buttons -->
+                    <div id="guest-actions" class="flex items-center space-x-2">
+                        <button id="btn-open-login" class="px-3.5 py-2 text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors">
+                            Sign In
+                        </button>
+                        <button id="btn-open-register" class="px-3.5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm hover:shadow transition-all">
+                            Register
+                        </button>
+                    </div>
+
+                    <!-- Authenticated User Profile Menu -->
+                    <div id="user-profile-menu" class="hidden flex items-center space-x-2.5 pl-2 border-l border-slate-200">
+                        <div class="text-right hidden sm:block">
+                            <span id="user-display-name" class="text-xs font-bold text-slate-900 block truncate max-w-[120px]">User</span>
+                            <span id="user-role-badge" class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-slate-100 text-slate-600">ROLE</span>
+                        </div>
+                        <button id="btn-logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors" title="Log Out">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ====================================================================
+         3. VIEW: CUSTOMER MARKETPLACE CATALOG
+         ==================================================================== -->
+    <main id="view-catalog" class="app-view flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Highlights Banner -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-8 sm:p-12 mb-8 shadow-xl shadow-indigo-900/10">
+            <div class="relative z-10 max-w-2xl">
+                <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 mb-4 backdrop-blur">
+                    <span>✨</span><span>Relational Multi-Vendor E-Commerce Engine</span>
+                </span>
+                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                    Shop Directly From Verified Independent Vendors.
+                </h1>
+                <p class="mt-4 text-sm sm:text-base text-indigo-100 font-normal leading-relaxed">
+                    Featuring automated multi-vendor order splitting, atomic inventory deduction to prevent overselling, 10% platform commission accounting, and customer feedback.
+                </p>
+            </div>
+            <!-- Decorative Background SVG -->
+            <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                <svg class="w-96 h-96 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 mb-8 shadow-sm space-y-4">
+            <!-- Search & Dropdown Controls -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        🔍
+                    </span>
+                    <input type="text" id="input-search" placeholder="Search gadgets, apparel, home decor by keyword..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center space-x-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                        <label for="select-sort" class="text-xs font-semibold text-slate-500">Sort:</label>
+                        <select id="select-sort" class="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer">
+                            <option value="newest">Newest Arrivals</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="rating">Top Rated</option>
+                        </select>
+                    </div>
+
+                    <label class="flex items-center space-x-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 cursor-pointer select-none hover:bg-slate-100 transition-colors">
+                        <input type="checkbox" id="check-instock" class="rounded text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-xs font-semibold text-slate-700">In Stock Only</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Categories Horizontal Pills Row -->
+            <div id="category-pills-container" class="flex items-center space-x-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                <!-- Injected dynamically by JS -->
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Product cards rendered dynamically -->
+        </div>
+    </main>
+
+    <!-- ====================================================================
+         4. VIEW: CUSTOMER ORDERS & TRACKING
+         ==================================================================== -->
+    <main id="view-orders" class="app-view hidden flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Your Orders & Tracking</h2>
+                <p class="text-xs text-slate-500 mt-1">Track multi-vendor fulfillment, view receipts, and rate verified purchases.</p>
+            </div>
+            <button onclick="Customer.loadCustomerOrders()" class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-all shadow-2xs">
+                ⟳ Refresh
+            </button>
+        </div>
+
+        <div id="customer-orders-container" class="space-y-6">
+            <!-- Rendered dynamically -->
+        </div>
+    </main>
+
+    <!-- ====================================================================
+         5. VIEW: VENDOR PORTAL (Dashboard, Products CRUD, Orders, Earnings)
+         ==================================================================== -->
+    <main id="view-vendor" class="app-view hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Pending Approval Banner -->
+        <div id="vendor-pending-banner" class="hidden bg-amber-500 text-white rounded-2xl p-6 mb-8 shadow-md flex items-start space-x-4">
+            <span class="text-3xl">⏳</span>
+            <div>
+                <h3 class="text-lg font-bold">Store Application Under Administrator Review</h3>
+                <p class="text-sm text-amber-100 mt-1">
+                    Your store registration is currently <b>pending admin approval</b>. While pending, you can preview the portal, but product listings will not be visible on the public marketplace until approved.
+                </p>
+                <p class="text-xs text-amber-100 mt-2 font-mono">
+                    Tip: Switch to the <b>Admin</b> role above to approve this vendor application with one click!
+                </p>
+            </div>
+        </div>
+
+        <div id="vendor-portal-content" class="transition-opacity duration-200">
+            <!-- Header & Action -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h2 id="vendor-store-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Vendor Dashboard</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Approved Partner</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Manage catalog inventory, fulfill incoming orders, and track net earnings.</p>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button id="btn-open-add-product" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all flex items-center space-x-2">
+                        <span>+</span><span>Add New Product</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Gross Sales</span>
+                    <span id="vendor-stat-gross" class="text-2xl font-extrabold text-slate-900 mt-1 block">$0.00</span>
+                    <span class="text-[11px] text-slate-400 mt-1 block">Total customer billings</span>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Platform Fee (10%)</span>
+                    <span id="vendor-stat-fee" class="text-2xl font-extrabold text-indigo-600 mt-1 block">$0.00</span>
+                    <span class="text-[11px] text-slate-400 mt-1 block">Standard 10% platform share</span>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Net Vendor Earnings (90%)</span>
+                    <span id="vendor-stat-net" class="text-2xl font-extrabold text-emerald-600 mt-1 block">$0.00</span>
+                    <span class="text-[11px] text-emerald-700 mt-1 block font-semibold">Your accumulated payout</span>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Store Rating</span>
+                    <span id="vendor-stat-rating" class="text-2xl font-extrabold text-amber-500 mt-1 block">★ 0.0</span>
+                    <span class="text-[11px] text-slate-400 mt-1 block">Customer satisfaction index</span>
+                </div>
+            </div>
+
+            <!-- Low-Stock Alert Container -->
+            <div id="vendor-low-stock-container" class="mb-8 hidden">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- Orders Status Counts Bar -->
+            <div class="bg-slate-100/70 p-3 rounded-2xl mb-8 flex flex-wrap items-center justify-around gap-4 text-xs font-bold text-slate-700">
+                <div>Pending Fulfillment: <span id="vendor-stat-pending-orders" class="text-amber-600 font-extrabold ml-1">0</span></div>
+                <div>Shipped in Transit: <span id="vendor-stat-shipped-orders" class="text-sky-600 font-extrabold ml-1">0</span></div>
+                <div>Completed & Delivered: <span id="vendor-stat-delivered-orders" class="text-emerald-600 font-extrabold ml-1">0</span></div>
+            </div>
+
+            <!-- Section 1: Orders Requiring Vendor Action -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+                <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Incoming Orders (Your Store Items)</h3>
+                        <p class="text-xs text-slate-500">Update item statuses as you prepare and ship orders.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Order ID & Date</th>
+                                <th class="py-3 px-4">Product Details</th>
+                                <th class="py-3 px-4">Customer & Address</th>
+                                <th class="py-3 px-4">Gross Subtotal</th>
+                                <th class="py-3 px-4">Net Payout (90%)</th>
+                                <th class="py-3 px-4">Current Status</th>
+                                <th class="py-3 px-4 text-right">Update Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendor-orders-table-body" class="divide-y divide-slate-100">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section 2: Manage Products & Stock -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Product Inventory Catalog</h3>
+                        <p class="text-xs text-slate-500">Edit titles, prices, descriptions, and replenish stock levels.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Product Name</th>
+                                <th class="py-3 px-4">Price</th>
+                                <th class="py-3 px-4">Stock Level</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendor-products-table-body" class="divide-y divide-slate-100">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ====================================================================
+         6. VIEW: ADMIN PORTAL (Platform Reports, Approvals, Analytics)
+         ==================================================================== -->
+    <main id="view-admin" class="app-view hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Platform Administration</h2>
+                <p class="text-xs text-slate-500 mt-1">Oversee vendor registrations, platform revenue from 10% commission, and relational database views.</p>
+            </div>
+            <span id="admin-pending-badge" class="hidden px-3 py-1 bg-amber-500 text-white rounded-full text-xs font-bold shadow-2xs">
+                0 Pending
+            </span>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total GMV</span>
+                <span id="admin-stat-gmv" class="text-xl font-extrabold text-slate-900 mt-1 block">$0.00</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Platform Revenue</span>
+                <span id="admin-stat-revenue" class="text-xl font-extrabold text-indigo-600 mt-1 block">$0.00</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Orders</span>
+                <span id="admin-stat-orders" class="text-xl font-extrabold text-slate-900 mt-1 block">0</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Vendors</span>
+                <span id="admin-stat-vendors" class="text-xs font-extrabold text-amber-600 mt-2 block">0</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Customers</span>
+                <span id="admin-stat-customers" class="text-xl font-extrabold text-slate-900 mt-1 block">0</span>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Low Stock Alerts</span>
+                <span id="admin-stat-lowstock" class="text-xl font-extrabold text-rose-600 mt-1 block">0</span>
+            </div>
+        </div>
+
+        <!-- DBMS Reports Navigation Tabs -->
+        <div class="flex items-center space-x-2 overflow-x-auto pb-2 mb-4 border-b border-slate-200 no-scrollbar">
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm" data-tab="vendors">
+                🏬 Vendor Approvals & Stores
+            </button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-2xs" data-tab="performance">
+                📊 Vendor Performance (View)
+            </button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-2xs" data-tab="monthly">
+                📈 Monthly Revenue (View)
+            </button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-2xs" data-tab="lowstock">
+                ⚠️ Low Stock Audit (View)
+            </button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-2xs" data-tab="orders">
+                📦 Global Orders Ledger
+            </button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-2xs" data-tab="payments">
+                💳 Payments Ledger
+            </button>
+        </div>
+
+        <!-- Tab 1: Vendors & Approvals Pane -->
+        <div id="admin-tab-pane-vendors" class="admin-tab-pane bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200">
+                <h3 class="font-bold text-slate-900 text-sm">Vendor Store Management & Application Review</h3>
+                <p class="text-xs text-slate-500">Approve new vendors to allow catalog listings or reject non-compliant stores.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Store Name & Description</th>
+                            <th class="py-3 px-4">Owner Contact</th>
+                            <th class="py-3 px-4">Products</th>
+                            <th class="py-3 px-4">Total Earnings</th>
+                            <th class="py-3 px-4">Approval Status</th>
+                            <th class="py-3 px-4 text-right">Approval Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-vendors-table-body" class="divide-y divide-slate-100">
+                        <!-- Injected dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: Vendor Performance Report Pane (vw_vendor_performance) -->
+        <div id="admin-tab-pane-performance" class="admin-tab-pane hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm">Database View: vw_vendor_performance</h3>
+                    <p class="text-xs text-slate-500">Aggregates orders, gross sales, 10% platform commission, and average customer rating.</p>
+                </div>
+                <span class="px-2.5 py-1 text-[11px] font-mono font-bold bg-indigo-50 text-indigo-700 rounded-lg">MySQL VIEW</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Vendor Store</th>
+                            <th class="py-3 px-4">Orders & Volume</th>
+                            <th class="py-3 px-4">Gross Sales</th>
+                            <th class="py-3 px-4">Platform Fee (10%)</th>
+                            <th class="py-3 px-4">Vendor Net Payout</th>
+                            <th class="py-3 px-4">Avg Rating</th>
+                            <th class="py-3 px-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-performance-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 3: Monthly Revenue Report Pane (vw_monthly_platform_revenue) -->
+        <div id="admin-tab-pane-monthly" class="admin-tab-pane hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm">Database View: vw_monthly_platform_revenue</h3>
+                    <p class="text-xs text-slate-500">Monthly breakdown of gross merchandise value, platform commission, and vendor payouts.</p>
+                </div>
+                <span class="px-2.5 py-1 text-[11px] font-mono font-bold bg-indigo-50 text-indigo-700 rounded-lg">MySQL VIEW</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Month</th>
+                            <th class="py-3 px-4">Orders Count</th>
+                            <th class="py-3 px-4">Gross GMV</th>
+                            <th class="py-3 px-4">Platform Fee Revenue (10%)</th>
+                            <th class="py-3 px-4">Disbursements to Vendors</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-monthly-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 4: Low Stock Audit Pane (vw_low_stock_products) -->
+        <div id="admin-tab-pane-lowstock" class="admin-tab-pane hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm">Database View: vw_low_stock_products</h3>
+                    <p class="text-xs text-slate-500">Live query of inventory records where stock_quantity &le; low_stock_threshold.</p>
+                </div>
+                <span class="px-2.5 py-1 text-[11px] font-mono font-bold bg-rose-50 text-rose-700 rounded-lg">STOCK ALERT</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Product Name</th>
+                            <th class="py-3 px-4">Category</th>
+                            <th class="py-3 px-4">Vendor & Contact</th>
+                            <th class="py-3 px-4">Current Stock</th>
+                            <th class="py-3 px-4">Threshold</th>
+                            <th class="py-3 px-4">Deficit Alert</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-lowstock-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 5: Global Orders Pane -->
+        <div id="admin-tab-pane-orders" class="admin-tab-pane hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200">
+                <h3 class="font-bold text-slate-900 text-sm">Consolidated Global Orders Ledger</h3>
+                <p class="text-xs text-slate-500">All customer purchases with multi-vendor item breakdown.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Order #</th>
+                            <th class="py-3 px-4">Placed Date</th>
+                            <th class="py-3 px-4">Customer</th>
+                            <th class="py-3 px-4">Total Amount</th>
+                            <th class="py-3 px-4">Payment Method</th>
+                            <th class="py-3 px-4">Master Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-orders-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 6: Payments Ledger Pane -->
+        <div id="admin-tab-pane-payments" class="admin-tab-pane hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50/70 border-b border-slate-200">
+                <h3 class="font-bold text-slate-900 text-sm">Financial Payments & Transactions Ledger</h3>
+                <p class="text-xs text-slate-500">Audited transaction records linking orders to verified customer payments.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Transaction ID</th>
+                            <th class="py-3 px-4">Order Ref</th>
+                            <th class="py-3 px-4">Customer</th>
+                            <th class="py-3 px-4">Amount Paid</th>
+                            <th class="py-3 px-4">Method</th>
+                            <th class="py-3 px-4">Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-payments-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ====================================================================
+         7. FOOTER
+         ==================================================================== -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© 2026 MarketHub Multi-Vendor System. Full-Stack DBMS Relational Project.</p>
+            <div class="flex items-center space-x-4">
+                <span class="text-slate-600 font-medium">Stack: Node.js + Express + MySQL + JWT</span>
+                <span>•</span>
+                <span class="text-slate-600 font-medium">Auto-Split & 10% Fee Automation</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ====================================================================
+         8. DRAWERS: CART & NOTIFICATIONS
+         ==================================================================== -->
+    <!-- Cart Backdrop & Drawer -->
+    <div id="cart-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden transition-opacity" onclick="Customer.toggleCart(false)"></div>
+    <div id="cart-drawer" class="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+            <div class="flex items-center space-x-2">
+                <span class="text-lg">🛒</span>
+                <h3 class="font-bold text-slate-800 text-sm">Your Shopping Cart</h3>
+            </div>
+            <button id="btn-close-cart" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors">
+                ✕
+            </button>
+        </div>
+
+        <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- Items grouped by vendor rendered by customer.js -->
+        </div>
+
+        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+            <div class="flex justify-between text-xs text-slate-500">
+                <span>Items Subtotal:</span>
+                <span id="cart-subtotal-price" class="font-bold text-slate-800">$0.00</span>
+            </div>
+            <div class="flex justify-between text-xs text-indigo-600">
+                <span>Platform Commission (10%):</span>
+                <span id="cart-platform-fee" class="font-bold">$0.00 (included)</span>
+            </div>
+            <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                <span>Total Amount:</span>
+                <span id="cart-total-price">$0.00</span>
+            </div>
+
+            <button id="btn-proceed-checkout" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold text-xs rounded-xl shadow-md transition-all">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Backdrop & Drawer -->
+    <div id="notifications-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden transition-opacity" onclick="App.toggleNotifications(false)"></div>
+    <div id="notifications-drawer" class="fixed inset-y-0 right-0 max-w-sm w-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+            <div class="flex items-center space-x-2">
+                <span class="text-lg">🔔</span>
+                <h3 class="font-bold text-slate-800 text-sm">Notifications</h3>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="btn-mark-all-notifications" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">
+                    Mark All Read
+                </button>
+                <button id="btn-close-notifications" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200">
+                    ✕
+                </button>
+            </div>
+        </div>
+
+        <div id="notifications-list" class="flex-1 overflow-y-auto p-4 space-y-2.5">
+            <!-- Injected dynamically -->
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         9. MODALS: LOGIN, REGISTER, CHECKOUT, PRODUCT CRUD, RESTOCK, REVIEW
+         ==================================================================== -->
+
+    <!-- Login Modal -->
+    <div id="modal-login" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl mb-2 font-bold">🔑</div>
+                <h3 class="text-xl font-extrabold text-slate-900">Welcome Back</h3>
+                <p class="text-xs text-slate-500 mt-1">Sign in to your customer or vendor account</p>
+            </div>
+
+            <form id="form-login" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" id="btn-submit-login" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    Sign In
+                </button>
+            </form>
+
+            <p class="text-xs text-center text-slate-500 mt-5">
+                Don't have an account? <a href="#" id="link-to-register" class="text-indigo-600 font-bold hover:underline">Create one</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="modal-register" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl mb-2 font-bold">📝</div>
+                <h3 class="text-xl font-extrabold text-slate-900">Create an Account</h3>
+                <p class="text-xs text-slate-500 mt-1">Select your account type to get started</p>
+            </div>
+
+            <!-- Role Selection Tabs -->
+            <div class="flex p-1 bg-slate-100 rounded-xl mb-4">
+                <button type="button" id="tab-reg-customer" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition-all">
+                    Customer
+                </button>
+                <button type="button" id="tab-reg-vendor" class="flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-600 transition-all">
+                    Vendor (Seller)
+                </button>
+            </div>
+
+            <form id="form-register" class="space-y-3.5">
+                <input type="hidden" id="reg-role" value="customer">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                    <input type="text" id="reg-name" required placeholder="John Doe" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="john@example.com" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number (Optional)</label>
+                    <input type="tel" id="reg-phone" placeholder="+1-555-0199" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Vendor Only Specific Fields -->
+                <div id="vendor-registration-fields" class="hidden space-y-3 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-700 mb-1">Store / Business Name *</label>
+                        <input type="text" id="reg-store-name" placeholder="Apex Electronics" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-indigo-50/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Store Description</label>
+                        <textarea id="reg-store-desc" rows="2" placeholder="Briefly describe what your store sells..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <p class="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                        ℹ️ Note: Vendor accounts require approval by the Administrator before products can be published.
+                    </p>
+                </div>
+
+                <button type="submit" id="btn-submit-register" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all mt-2">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="text-xs text-center text-slate-500 mt-4">
+                Already have an account? <a href="#" id="link-to-login" class="text-indigo-600 font-bold hover:underline">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="modal-checkout" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <div class="mb-5">
+                <h3 class="text-xl font-extrabold text-slate-900">Checkout & Order Placement</h3>
+                <p class="text-xs text-slate-500 mt-1">Multi-vendor cart will be automatically split by vendor with verified mock payment.</p>
+            </div>
+
+            <form id="form-checkout" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Delivery Address *</label>
+                    <textarea id="checkout-shipping-address" required rows="3" placeholder="Enter complete street address, city, state, and postal code..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Payment Method</label>
+                    <select id="checkout-payment-method" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        <option value="Credit Card (Visa/Mastercard)">Credit Card (Visa / Mastercard) - Instant Verification</option>
+                        <option value="UPI / Instant Bank Transfer">UPI / Instant Bank Transfer</option>
+                        <option value="Digital Wallet">Digital Wallet (Apple Pay / Google Pay)</option>
+                        <option value="Cash on Delivery">Cash on Delivery (COD)</option>
+                    </select>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-indigo-900 block font-bold">Total Order Value:</span>
+                        <span class="text-[11px] text-indigo-600 block">10% Platform fee automatically routed</span>
+                    </div>
+                    <span id="checkout-total-display" class="text-xl font-extrabold text-indigo-900">$0.00</span>
+                </div>
+
+                <button type="submit" id="btn-submit-order" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-all">
+                    Pay & Place Order
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div id="modal-product-details" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="w-full md:w-1/2">
+                    <img id="modal-prod-image" src="" class="w-full h-64 object-cover rounded-2xl border border-slate-200">
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col justify-between">
+                    <div>
+                        <span id="modal-prod-category" class="text-xs font-semibold text-indigo-600 uppercase tracking-wider block">Category</span>
+                        <h3 id="modal-prod-name" class="text-xl font-extrabold text-slate-900 mt-1">Product Title</h3>
+                        <div class="flex items-center space-x-2 text-xs text-slate-500 mt-1">
+                            <span>🏬 Sold by: <b id="modal-prod-store" class="text-slate-800">Store</b></span>
+                        </div>
+
+                        <div class="flex items-center space-x-3 mt-3">
+                            <span id="modal-prod-price" class="text-2xl font-black text-slate-900">$0.00</span>
+                            <span id="modal-prod-stock" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">In Stock</span>
+                        </div>
+
+                        <div id="modal-prod-rating" class="text-xs font-bold text-amber-500 mt-2">★ 0.0 (0 reviews)</div>
+                        <p id="modal-prod-description" class="text-xs text-slate-600 mt-3 leading-relaxed">Description goes here.</p>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-slate-100">
+                        <button id="btn-modal-add-to-cart" class="w-full py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all">
+                            + Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews list inside modal -->
+            <div class="mt-8 pt-6 border-t border-slate-200">
+                <h4 class="font-bold text-slate-900 text-sm mb-3">Customer Feedback & Reviews</h4>
+                <div id="modal-prod-reviews-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product CRUD Modal (Vendor Add / Edit) -->
+    <div id="modal-product-crud" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <h3 id="modal-crud-title" class="text-xl font-extrabold text-slate-900 mb-4">Add New Product</h3>
+
+            <form id="form-product-crud" class="space-y-3.5">
+                <input type="hidden" id="crud-product-id">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Product Title *</label>
+                    <input type="text" id="crud-name" required placeholder="e.g. Ergonomic Office Chair" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Price ($) *</label>
+                        <input type="number" step="0.01" min="0" id="crud-price" required placeholder="49.99" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+                        <select id="crud-category-id" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="crud-stock-wrapper" class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Initial Stock Units *</label>
+                        <input type="number" min="0" id="crud-initial-stock" value="15" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Low-Stock Alert Level</label>
+                        <input type="number" min="1" id="crud-low-threshold" value="5" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                    <input type="url" id="crud-image-url" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Detailed Description</label>
+                    <textarea id="crud-description" rows="3" placeholder="Highlight key features and specifications..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <button type="submit" id="btn-submit-product-crud" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all mt-2">
+                    Save Product
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Restock Modal -->
+    <div id="modal-restock" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Restock Product Inventory</h3>
+            <p id="restock-product-name" class="text-xs font-bold text-indigo-600 truncate mb-4">Product Name</p>
+
+            <form id="form-restock-product" class="space-y-4">
+                <input type="hidden" id="restock-product-id">
+
+                <div class="p-3 bg-slate-50 rounded-xl flex justify-between text-xs text-slate-600">
+                    <span>Current Inventory:</span>
+                    <span id="restock-current-stock" class="font-extrabold text-slate-900">0</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Additional Units to Add *</label>
+                    <input type="number" min="1" id="restock-add-quantity" value="20" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold">
+                </div>
+
+                <button type="submit" id="btn-submit-restock" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    Confirm Restock
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rate & Review Modal -->
+    <div id="modal-review" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button class="close-modal-btn absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Rate Item & Vendor</h3>
+            <p id="review-product-title" class="text-xs text-indigo-600 font-bold mb-4">Product</p>
+
+            <form id="form-submit-review" class="space-y-4">
+                <input type="hidden" id="review-order-id">
+                <input type="hidden" id="review-product-id">
+                <input type="hidden" id="review-rating-value" value="5">
+
+                <!-- Star Rating Selector -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Rating (1 to 5 Stars)</label>
+                    <div class="flex items-center space-x-1">
+                        <button type="button" class="star-rating-btn text-2xl text-amber-400 hover:scale-110 transition-transform" data-rating="1">★</button>
+                        <button type="button" class="star-rating-btn text-2xl text-amber-400 hover:scale-110 transition-transform" data-rating="2">★</button>
+                        <button type="button" class="star-rating-btn text-2xl text-amber-400 hover:scale-110 transition-transform" data-rating="3">★</button>
+                        <button type="button" class="star-rating-btn text-2xl text-amber-400 hover:scale-110 transition-transform" data-rating="4">★</button>
+                        <button type="button" class="star-rating-btn text-2xl text-amber-400 hover:scale-110 transition-transform" data-rating="5">★</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Review</label>
+                    <textarea id="review-comment" rows="3" placeholder="Share your experience with this item and seller delivery..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <button type="submit" id="btn-submit-review" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    Submit Rating & Review
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Frontend Application Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/customer.js"></script>
+    <script src="js/vendor.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

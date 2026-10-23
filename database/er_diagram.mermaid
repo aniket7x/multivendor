@@ -1,0 +1,128 @@
+erDiagram
+    USERS ||--o| VENDORS : "registers as"
+    USERS ||--o{ ORDERS : "places"
+    USERS ||--o{ RATINGS : "writes"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ PAYMENTS : "makes"
+
+    VENDORS ||--o{ PRODUCTS : "lists & owns"
+    VENDORS ||--o{ ORDER_ITEMS : "fulfills"
+    VENDORS ||--o{ RATINGS : "evaluated in"
+
+    CATEGORIES ||--o{ PRODUCTS : "classifies"
+
+    PRODUCTS ||--|| INVENTORY : "tracked by"
+    PRODUCTS ||--o{ ORDER_ITEMS : "included in"
+    PRODUCTS ||--o{ RATINGS : "reviewed in"
+
+    ORDERS ||--|{ ORDER_ITEMS : "contains"
+    ORDERS ||--|| PAYMENTS : "settled via"
+    ORDERS ||--o{ RATINGS : "originates"
+
+    USERS {
+        int id PK
+        string name
+        string email UK
+        string password_hash
+        enum role "admin, vendor, customer"
+        string phone
+        text address
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    VENDORS {
+        int id PK
+        int user_id FK,UK
+        string store_name UK
+        text store_description
+        enum status "pending, approved, rejected"
+        decimal commission_rate "default 10.00"
+        decimal total_earnings "accumulated payout"
+        string banner_url
+        timestamp created_at
+    }
+
+    CATEGORIES {
+        int id PK
+        string name UK
+        text description
+        string icon
+        timestamp created_at
+    }
+
+    PRODUCTS {
+        int id PK
+        int vendor_id FK
+        int category_id FK
+        string name
+        text description
+        decimal price
+        string image_url
+        boolean is_active
+        timestamp created_at
+    }
+
+    INVENTORY {
+        int id PK
+        int product_id FK,UK
+        int stock_quantity "atomic check >= 0"
+        int low_stock_threshold "default 5"
+        timestamp last_updated
+    }
+
+    ORDERS {
+        int id PK
+        int customer_id FK
+        decimal total_amount
+        text shipping_address
+        string payment_method
+        enum status "pending, paid, processing, completed, cancelled"
+        timestamp created_at
+    }
+
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int vendor_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+        decimal platform_fee "10 percent"
+        decimal vendor_earnings "90 percent"
+        enum status "pending, processing, shipped, delivered, cancelled"
+        timestamp created_at
+    }
+
+    PAYMENTS {
+        int id PK
+        int order_id FK
+        int customer_id FK
+        decimal amount
+        string payment_method
+        enum payment_status "pending, completed, failed, refunded"
+        string transaction_id UK
+        timestamp created_at
+    }
+
+    RATINGS {
+        int id PK
+        int customer_id FK
+        int vendor_id FK
+        int product_id FK
+        int order_id FK
+        int rating "1 to 5"
+        text review_text
+        timestamp created_at
+    }
+
+    NOTIFICATIONS {
+        int id PK
+        int user_id FK
+        string title
+        text message
+        enum type "order, inventory, payment, system"
+        boolean is_read
+        timestamp created_at
+    }
