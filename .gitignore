@@ -1,0 +1,32 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS and editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Private keys and certificates
+*.pem
+*.key
+
+# Python cache (if applicable)
+__pycache__/
+*.pyc
+.venv/
+venv/
